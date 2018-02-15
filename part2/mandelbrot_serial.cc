@@ -11,6 +11,7 @@
 
 using namespace std;
 
+#define DEBUG
 #define WIDTH 1000
 #define HEIGHT 1000
 
@@ -57,13 +58,21 @@ main(int argc, char* argv[]) {
   gil::rgb8_image_t img(height, width);
   auto img_view = gil::view(img);
 
+
+
   y = minY;
   for (int i = 0; i < height; ++i) {
     x = minX;
     for (int j = 0; j < width; ++j) {
+	#ifdef DEBUG
+	printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf)    ",i,j,x,y);
+	#endif
       img_view(j, i) = render(mandelbrot(x, y)/512.0);
       x += jt;
     }
+   #ifdef DEBUG
+   printf("\n");
+   #endif
     y += it;
   }
   gil::png_write_view("mandelbrot.png", const_view(img));
