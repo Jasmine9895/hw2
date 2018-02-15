@@ -5,7 +5,7 @@
 #define int_p_NULL (int*)NULL
 #include <boost/gil/gil_all.hpp>
 #include <boost/gil/extension/io/png_dynamic_io.hpp>
-//#define DEBUG
+#define DEBUG
 namespace gil = boost::gil;
 
 /** Construct a color suitable for display. */
