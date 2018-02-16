@@ -35,7 +35,7 @@ mandelbrot(double x, double y) {
 }
 void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,double it,double jt)
 {
-/*	
+	
 	printf("Computing for rank=%d\n",p);
 	double y=minY + p*N*it;
   	for (int i = p*N; i < N*(p+1); ++i) 
@@ -52,7 +52,7 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 			img[curr_index].b = t.b;
 
 			#ifdef DEBUG_EXTENDED
-			printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf),r=%d r=%d  ",i,j,x,y,t.r,img[(i-p*N)*width +j].r);
+			//printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf),r=%d r=%d  ",i,j,x,y,t.r,img[(i-p*N)*width +j].r);
 			#endif
 			x += jt;
     		}
@@ -74,11 +74,7 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 		printf("\n");
 	}
 	#endif 
-*/
 
-img[0].r = p;
-img[0].g = 7*p;
-img[0].b = 9*p; 
 
 }
 int
@@ -210,14 +206,15 @@ int p = Num_Processors-1;
    // Compute the average of your subset
 
 
+   MPI_Barrier(MPI_COMM_WORLD);
+	printf("Compute done for all\n");
    // Gather all partial averages down to the root process
    //float *sub_avgs = NULL;
 
-  printf("------------------\n");
+  printf("\n-------Computer Results-----------\n");
   printf("my_rank: %d\n",world_rank);
 	printf("Gathering values\n");
 	printf("My values");
-	printf("Rank=%d, RGB: %d,%d,%d",world_rank,row_blocks[0].r,row_blocks[0].g,row_blocks[0].b);
 	#ifdef DEBUG	
 	for(int i=0;i<N;i++)
 	{
@@ -225,27 +222,23 @@ int p = Num_Processors-1;
 		{
 			
 			int curr_index= i*width + j;
-			printf("r:%d  g:%d   ",row_blocks[curr_index].r,row_blocks[curr_index].g);		
+			printf("oCI:%d r:%d   ",curr_index,row_blocks[curr_index].r);		
 		}
 		printf("\n");
 	}
 	#endif
 	
-printf("----------------------\n");		
+   MPI_Barrier(MPI_COMM_WORLD);
+printf("\n--printed compute results now calling Gather--------------------\n");		
 
-  // MPI_Gather(&row_blocks, num_elements_per_proc,dt_point , all_rows, num_elements_per_proc, dt_point, 0, MPI_COMM_WORLD);
-   MPI_Gather(row_blocks, 1,dt_point , all_rows, 1, dt_point, 0, MPI_COMM_WORLD);
+   MPI_Gather(row_blocks, num_elements_per_proc,dt_point , all_rows, num_elements_per_proc, dt_point, 0, MPI_COMM_WORLD);
 printf("Gathering done\n");
-   if (world_rank == 0) 
-{
-	for(int p1=0;p1<world_size;p1++)
-	{	
-		printf("p:%d RGB=(%d,%d,%d)",p1,all_rows[p1].r,all_rows[p1].g,all_rows[p1].b);
-	}
-/* 
- 	gil::rgb8_image_t img(height, width);
+   
+   MPI_Barrier(MPI_COMM_WORLD);
+if (world_rank == 0) {
+  	gil::rgb8_image_t img(height, width);
   	auto img_view = gil::view(img);
-     write to image_file
+     //write to image_file
      printf("Storing in img\n");
 
      for(int i=0;i<height;i++)
@@ -255,12 +248,12 @@ printf("Gathering done\n");
          int r =  all_rows[i*width+j].r;
          int g =  all_rows[i*width+j].g;
          int b =  all_rows[i*width+j].b;
-
+	int curr_index = i*width + j;
+	printf("rCI:%d r:%d   ",curr_index,r);		
          img_view(j, i) = gil::rgb8_pixel_t(r,g,b);
        }
      }
      gil::png_write_view("mandelbrot.png", const_view(img));
-*/
    }
 
    // Clean up
