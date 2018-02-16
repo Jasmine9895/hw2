@@ -38,6 +38,7 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 	
 	printf("Computing for rank=%d\n",p);
 	double y=minY + p*N*it;
+	int curr_index = 0;
   	for (int i = p*N; i < N*(p+1); ++i) 
   	{	
     		double x = minX;
@@ -45,7 +46,7 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 		{
       			
       			//img[(i-p*N)*width + j] = render_color(mandelbrot(x,y)/512.0);
-			int curr_index= i*width + j;
+			curr_index= (i-p*N)*width + j;
       			Color_Point t = render_color(mandelbrot(x,y)/512.0);
 			img[curr_index].r = t.r;
 			img[curr_index].g = t.g;
@@ -53,6 +54,10 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 
 			#ifdef DEBUG_EXTENDED
 			//printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf),r=%d r=%d  ",i,j,x,y,t.r,img[(i-p*N)*width +j].r);
+			
+			int curr_index= (i-p*N)*width + j;
+			//img[curr_index].g = 20;
+			printf("CI:%d r:%d ir:%d",curr_index,t.r,img[curr_index].r);		
 			#endif
 			x += jt;
     		}
@@ -63,12 +68,13 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 		#endif
   	}
 	#ifdef DEBUG_EXTENDED
+	printf("/n Now printing in compute after computation loop\n");
 	for(int i=0;i<N;i++)
 	{
 		for(int j= 0;j<width;j++)
 		{
-			int curr_index= i*width + j;
-			img[curr_index].g = 20;
+			curr_index= i*width + j;
+			//img[curr_index].g = 20;
 			printf("CI:%d r:%d ",curr_index,img[curr_index].r);		
 		}
 		printf("\n");
@@ -222,7 +228,7 @@ int p = Num_Processors-1;
 		{
 			
 			int curr_index= i*width + j;
-			printf("oCI:%d r:%d   ",curr_index,row_blocks[curr_index].r);		
+			printf(" oCI:%d r:%d   ",curr_index,row_blocks[curr_index].r);		
 		}
 		printf("\n");
 	}
@@ -249,9 +255,13 @@ if (world_rank == 0) {
          int g =  all_rows[i*width+j].g;
          int b =  all_rows[i*width+j].b;
 	int curr_index = i*width + j;
-	printf("rCI:%d r:%d   ",curr_index,r);		
-         img_view(j, i) = gil::rgb8_pixel_t(r,g,b);
-       }
+	#ifdef DEBUG
+	printf(" rCI:%d r:%d   ",curr_index,r);		
+       #endif
+	  img_view(j, i) = gil::rgb8_pixel_t(r,g,b);//This was removed for checking rest of code
+      
+	}
+	printf("\n");
      }
      gil::png_write_view("mandelbrot.png", const_view(img));
    }
