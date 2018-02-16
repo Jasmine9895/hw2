@@ -36,7 +36,7 @@ mandelbrot(double x, double y) {
 void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,double it,double jt)
 {
 	
-
+	printf("Computing for rank=%d\n",p);
 	double y=minY + p*N*it;
   	for (int i = p*N; i < N*(p+1); ++i) 
   	{	
@@ -44,11 +44,15 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
     		for (int j = 0; j < width; ++j) 
 		{
       			
-			//img_view(j, i) = render(mandelbrot(x, y)/512.0);
-      			img[(i-p*N)*width + j] = render_color(mandelbrot(x,y)/512.0);
-			#ifdef DEBUG
+      			//img[(i-p*N)*width + j] = render_color(mandelbrot(x,y)/512.0);
+			int curr_index= i*width + j;
       			Color_Point t = render_color(mandelbrot(x,y)/512.0);
-			printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf),r=%d    ",i,j,x,y,t.r);
+			img[curr_index].r = t.r;
+			img[curr_index].g = t.g;
+			img[curr_index].b = t.b;
+
+			#ifdef DEBUG_EXTENDED
+			printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf),r=%d r=%d  ",i,j,x,y,t.r,img[(i-p*N)*width +j].r);
 			#endif
 			x += jt;
     		}
@@ -58,6 +62,20 @@ void compute_row(int p,int width,Color_Point *img,int N,double minX,double minY,
 		printf("\n");
 		#endif
   	}
+	#ifdef DEBUG_EXTENDED
+	for(int i=0;i<N;i++)
+	{
+		for(int j= 0;j<width;j++)
+		{
+			int curr_index= i*width + j;
+			img[curr_index].g = 20;
+			printf("CI:%d r:%d ",curr_index,img[curr_index].r);		
+		}
+		printf("\n");
+	}
+	#endif 
+
+
 }
 int
 main(int argc, char* argv[]) {
@@ -86,19 +104,18 @@ main(int argc, char* argv[]) {
   	auto img_view = gil::view(img);
 
   y = minY;
+/*  
   int Num_Processors = 3;
   int N = ceil(float(height)/float(Num_Processors));
-  //vector<vector<vector<int>> all_row_blocks(Num_Processors,vector<vector<int>(N,vector<int>(width)));
-  vector<Color_Point*> all_row_blocks;
   printf("N = %d\n",N);
 
+  vector<Color_Point*> all_row_blocks;
   for(int p=0;p<Num_Processors;p++)
   {
 
 	#ifdef DEBUG
 	printf("p=%d  y=%0.1lf\n",p,y);
 	#endif
-//	vector<Color_Point> row_img(width*N);
    	Color_Point *row_img = (Color_Point *)malloc(sizeof(Color_Point) * N*width);
 	compute_row(p,width,row_img,N,minX,minY,it,jt);
 	all_row_blocks.push_back(row_img);
@@ -152,9 +169,9 @@ int p = Num_Processors-1;
 
  	gil::png_write_view("mandelbrot.png", const_view(img));
 }
+*/
 
-
-/* 
+ 
  MPI_Init(NULL, NULL);
 
   MPI_Datatype dt_point;
@@ -162,6 +179,7 @@ int p = Num_Processors-1;
   MPI_Type_commit(&dt_point);
    int world_rank;
    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
    int world_size;
    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
    int N = ceil(float(height)/float(world_size)); //world = number of processors , this is to find num of rows per processor
@@ -172,35 +190,52 @@ int p = Num_Processors-1;
 
   int num_elements_per_proc = N*width;
 
-
+  printf("Num_elem_per_proc = %d, N =%d, width = %d",num_elements_per_proc,N,width);
    Color_Point *all_rows = NULL;
    if (world_rank == 0) {
      all_rows = (Color_Point *)malloc(sizeof(Color_Point) * num_elements_per_proc*world_size);
-   }
+	printf("World size: %d\n",world_size);   
+ }
 
 
 
    Color_Point *row_blocks = (Color_Point *)malloc(sizeof(Color_Point) * num_elements_per_proc);
    assert(row_blocks!=NULL);
-   compute_row(world_rank,width,row_blocks,N,minX,minY,it,jt);
+	printf("Computing values for all rows\n");  
+ compute_row(world_rank,width,row_blocks,N,minX,minY,it,jt);
    // Compute the average of your subset
 
 
    // Gather all partial averages down to the root process
    //float *sub_avgs = NULL;
 
-
+  printf("------------------\n");
+  printf("my_rank: %d\n",world_rank);
+	printf("Gathering values\n");
+	printf("My values");
+	#ifdef DEBUG	
+	for(int i=0;i<N;i++)
+	{
+		for(int j= 0;j<width;j++)
+		{
+			
+			int curr_index= i*width + j;
+			printf("r:%d  g:%d   ",row_blocks[curr_index].r,row_blocks[curr_index].g);		
+		}
+		printf("\n");
+	}
+	#endif
+	
+printf("----------------------\n");		
 
    MPI_Gather(&row_blocks, num_elements_per_proc,dt_point , all_rows, num_elements_per_proc, dt_point, 0, MPI_COMM_WORLD);
-
-   // Now that we have all of the partial averages on the root, compute the
-   // total average of all numbers. Since we are assuming each process computed
-   // an average across an equal amount of elements, this computation will
-   // produce the correct answer.
+printf("Gathering done\n");
    if (world_rank == 0) {
   	gil::rgb8_image_t img(height, width);
   	auto img_view = gil::view(img);
      //write to image_file
+     printf("Storing in img\n");
+
      for(int i=0;i<height;i++)
      {
        for(int j=0;j<width;j++)
@@ -226,5 +261,5 @@ int p = Num_Processors-1;
    MPI_Finalize();
 
 }
-*/
+
 /* eof */
