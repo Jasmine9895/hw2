@@ -44,6 +44,46 @@ Color_Point Compute_Color(int r,int c,double minX,double minY,double jt,double i
 }
 
 
+void compute_single_row(int row_num,int width,Color_Point *row_colors,double minX,double minY,double it,double jt)
+{
+	#ifdef DEBUG	
+	//printf("Computing for row=%d\n",row_num);
+	#endif
+	double y=minY + row_num*it;
+	int curr_index = 0;
+		int i=row_num;
+    		double x = minX;
+    		for (int j = 0; j < width; ++j) 
+		{
+      			
+			curr_index= j;
+      			Color_Point t = render_color(mandelbrot(x,y)/512.0);
+			row_colors[curr_index].r = t.r;
+			row_colors[curr_index].g = t.g;
+			row_colors[curr_index].b = t.b;
+
+			#ifdef DEBUG_EXTENDED
+			
+			int curr_index= j;
+			printf("CI:%d r:%d ir:%d",curr_index,t.r,row_colors[curr_index].r);		
+			#endif
+			x += jt;
+    		}
+		
+  	
+	#ifdef DEBUG_EXTENDED
+	printf("/n Now printing in compute after computation loop\n");
+		for(int j= 0;j<width;j++)
+		{
+			curr_index=  j;
+			printf("CI:%d r:%d ",curr_index,row_colors[curr_index].r);		
+		}
+		printf("\n");
+	#endif 
+
+
+}
+
 int
 main(int argc, char* argv[]) {
   double minX = -2.1;
@@ -70,7 +110,7 @@ main(int argc, char* argv[]) {
   gil::rgb8_image_t img(height, width);
   auto img_view = gil::view(img);
 
-
+/*
 
   y = minY;
   for (int i = 0; i < height; ++i) {
@@ -87,7 +127,23 @@ main(int argc, char* argv[]) {
    printf("\n");
    #endif
     y += it;
-  }
+  i}
+*/
+int i=0;
+//Here i is the column number
+ while(i<height)
+{	
+	
+	Color_Point *single_row_colors = (Color_Point *)malloc(sizeof(Color_Point) * width);
+	compute_single_row(i,width,single_row_colors,minX,minY,it,jt);
+	
+	for(int j=0;j<width;++j)
+	{
+		Color_Point t = single_row_colors[j];
+		img_view(j,i) = gil::rgb8_pixel_t(t.r,t.g,t.b);
+	}
+	i++;	
+}
   gil::png_write_view("mandelbrot.png", const_view(img));
 }
 
