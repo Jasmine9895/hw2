@@ -1,0 +1,44 @@
+Time: 715466 microseconds
+Time: 713230 microseconds
+Time: 711757 microseconds
+Time: 712176 microseconds
+Time: 1570510 microseconds
+Time: 1560699 microseconds
+Time: 1547990 microseconds
+Time: 1537340 microseconds
+Running Joe for 1
+--------------------------------------------------------------------------
+[[54884,1],0]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: compute-13-7
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+time for Joe: 0.774
+Running Joe for i4
+--------------------------------------------------------------------------
+[[54881,1],0]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: compute-13-7
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+time for Joe: 0.438
+Running Joe for 8
+--------------------------------------------------------------------------
+[[54859,1],2]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: compute-13-7
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+time for Joe: 0.580

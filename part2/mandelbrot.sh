@@ -1,7 +1,7 @@
 #!/bin/bash
 #$ -N Mandelbrot
 #$ -q class8i
-#$ -pe one-node-mpi 1
+#$ -pe mpi 32
 #$ -R y
 
 # Grid Engine Notes:
@@ -17,4 +17,13 @@ module load boost/1.57.0
 module load openmpi-1.8.3/gcc-4.9.2
 
 # Run the program 
-mpirun -np 1  ./mandelbrot_serial 1000 1000
+mpirun -np 8  ./mandelbrot_serial 1000 1000
+
+echo "Running Joe for 1"
+./mandelbrot_joe 1000 1000
+echo "Running Joe for i4"
+mpirun -np 4 ./mandelbrot_joe 1000 1000
+echo "Running Joe for 8"
+mpirun -np 8 ./mandelbrot_joe 1000 1000
+#echo "Running Joe for 16"
+#mpirun -np 16 -R y ./mandelbrot_joe 1000 1000

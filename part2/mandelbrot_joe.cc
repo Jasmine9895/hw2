@@ -142,7 +142,10 @@ main(int argc, char* argv[]) {
    Color_Point *row_blocks = (Color_Point *)malloc(sizeof(Color_Point) * num_elements_per_proc);
    assert(row_blocks!=NULL);
    //Computing for all blocks of rows
-   compute_row(world_rank,width,row_blocks,N,minX,minY,it,jt);
+   double t_start, t_elapsed;  
+   MPI_Barrier (MPI_COMM_WORLD); 
+   t_start = MPI_Wtime();
+  compute_row(world_rank,width,row_blocks,N,minX,minY,it,jt);
 
 
 
@@ -189,9 +192,13 @@ if (world_rank == 0) {
      gil::png_write_view("mandelbrot.png", const_view(img));
    }
 
+  
+  MPI_Barrier (MPI_COMM_WORLD); 
+  t_elapsed = MPI_Wtime () - t_start; /* Stop timer */
    // Clean up
    if (world_rank == 0) {
-     free(all_rows);
+    printf("time for Joe: %0.3lf\n",t_elapsed); 
+    free(all_rows);
    }
    free(row_blocks);
 

@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include <cstdlib>
-
+#include <chrono>
 #include "render.hh"
 
 using namespace std;
@@ -59,22 +59,25 @@ main(int argc, char* argv[]) {
   auto img_view = gil::view(img);
 
 
-
+ // double t_start,t_elapsed;
+  auto t_start  = std::chrono::steady_clock::now(); 
   y = minY;
   for (int i = 0; i < height; ++i) {
     x = minX;
     for (int j = 0; j < width; ++j) {
 	#ifdef DEBUG
-	printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf)    ",i,j,x,y);
+	//printf("ij=(%d,%d),xy=(%0.1lf,%0.1lf)    ",i,j,x,y);
 	#endif
       img_view(j, i) = render(mandelbrot(x, y)/512.0);
       x += jt;
     }
    #ifdef DEBUG
-   printf("\n");
+//   printf("\n");
    #endif
     y += it;
   }
+  auto t_end = std::chrono::steady_clock::now();
+  std::cout << "Time: " << (t_end - t_start) / std::chrono::microseconds(1) << " microseconds\n";
   gil::png_write_view("mandelbrot.png", const_view(img));
 }
 
